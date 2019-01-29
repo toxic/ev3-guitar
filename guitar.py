@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from ev3dev2.sound import Sound
-from ev3dev2.motor import MediumMotor
-from ev3dev2.sensor.lego import TouchSensor, InfraredSensor
-from ev3dev2.button import Button
 import math
 import sys
-import random
+
+from ev3dev2.button import Button
+from ev3dev2.motor import MediumMotor
+from ev3dev2.sensor.lego import InfraredSensor, TouchSensor
+from ev3dev2.sound import Sound
 
 print("Welcome to EV3 Guitar")
 
@@ -18,6 +18,7 @@ button = Button()
 
 # params
 multiply = 1
+pause = False
 step = [5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70]
 sound.set_volume(5)
 
@@ -43,15 +44,26 @@ def multiplyUp(state):
 def multiplyDown(state):
   multiply = multiply - 1
 
+def togglePause(state):
+  if pause == True:
+    pause = False
+  else:
+    pause = True
+
 button.on_up = volumeUp
 button.on_down = volumeDown
 button.on_left = multiplyUp
 button.on_right = multiplyDown
+button.on_enter = togglePause
 button.on_backspace = backButton
 
 # app run
 while True:
   button.process()
+
+  if pause == True:
+    continue
+
   distance = int(math.fabs(ir.value()))
   position = int(math.fabs(servo.position))
 
