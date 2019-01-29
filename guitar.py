@@ -75,10 +75,8 @@ while True:
     if delay == 0:
       print("Delay On")
     delay = 200
-
-  # onOff = 'on' if delay == 200 else 'off'
-  # print("Hz: " + str(hertz) + " Lenght: " + str(duration) + " Delay: " + str(onOff))
-
+  
+  # play sound
   sound.tone([
     (hertz, duration, delay)
   ])
