@@ -10,85 +10,101 @@ from ev3dev2.sound import Sound
 
 print("Welcome to EV3 Guitar")
 
-sound = Sound()
-ir = InfraredSensor()
-ts = TouchSensor()
-servo = MediumMotor()
-button = Button()
+class Guitar:
+  def __init__(self):
+    self.sound = Sound()
 
-# params
-multiply = 1
-pause = False
-step = [5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70]
-sound.set_volume(5)
+    # mount function
+    self.multiply = 1
+    self.pause = False
+    self.volume = 10
 
-def volumeUp(state):
-  current = int(sound.get_volume())
-  if current < 100:
-    sound.set_volume(current + 1)
-    print("Volume: " + str(current + 1))
+    # set initial volume
+    self.setVolume(50)
 
-def volumeDown(state):
-  current = int(sound.get_volume())
-  if current > 0:
-    sound.set_volume(current - 1)
-    print("Volume: " + str(current - 1))                                                  
+  def getVolume(self):
+    return int(self.sound.get_volume('Beep'))
 
-def backButton(state):
-  print("Bye!!")
-  sys.exit()
+  def setVolume(self, volume):
+    self.sound.set_volume(int(volume), 'Beep')
 
-def multiplyUp(state):
-  multiply = multiply + 1
+  def volumeUp(self, state):
+    if state:
+      if self.volume < 100:
+        self.sound.set_volume(self.volume + 1)
 
-def multiplyDown(state):
-  multiply = multiply - 1
+  def volumeDown(self, state):
+    if state:
+      if self.volume > 0:
+        self.sound.set_volume(self.volume - 1)                                             
 
-def togglePause(state):
-  if pause == True:
-    pause = False
-  else:
-    pause = True
+  def backButton(self, state):
+    print("Bye!!")
+    sys.exit()
 
-button.on_up = volumeUp
-button.on_down = volumeDown
-button.on_left = multiplyUp
-button.on_right = multiplyDown
-button.on_enter = togglePause
-button.on_backspace = backButton
+  def multiplyUp(self, state):
+    self.multiply = self.multiply + 1
 
-# app run
-while True:
-  button.process()
+  def multiplyDown(self, state):
+    if self.multiply > 1:
+      self.multiply = self.multiply - 1
 
-  if pause == True:
-    continue
+  def togglePause(self, state):
+    if state & self.pause:
+      self.pause = False
+    else:
+      self.pause = True
 
-  distance = int(math.fabs(ir.value()))
-  position = int(math.fabs(servo.position))
-
-  for x in step:
-    if distance <= x:
-      hertz = int(x * 15)
-      print("Hertz - " + str(hertz))
-      break
-
-  for x in step:
-    if position <= x:
-      duration = int(x * 5 * multiply)
-      print("Duration - " + str(duration))
-      break
-
-  if ts.is_pressed:
-    if delay == 200:
-      print("Delay Off")
+  # app run
+  def play(self):
     delay = 0
-  else:
-    if delay == 0:
-      print("Delay On")
-    delay = 200
-  
-  # play sound
-  sound.tone([
-    (hertz, duration, delay)
-  ])
+    step = [5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70]
+
+    button = Button()
+    button.on_up = self.volumeUp
+    button.on_down = self.volumeDown
+    button.on_left = self.multiplyUp
+    button.on_right = self.multiplyDown
+    button.on_enter = self.togglePause
+    button.on_backspace = self.backButton
+
+    ir = InfraredSensor()
+    ts = TouchSensor()
+    servo = MediumMotor()
+
+    while True:
+      self.volume = self.getVolume()
+      button.process()
+      
+      if self.pause == True:
+        continue
+
+      distance = int(math.fabs(ir.value()))
+      position = int(math.fabs(servo.position))
+
+      for x in step:
+        if distance <= x:
+          hertz = int(x * 15)
+          # print("Hertz - " + str(hertz))
+          break
+
+      for x in step:
+        if position <= x:
+          duration = int(x * 5 * self.multiply)
+          # print("Duration - " + str(duration))
+          break
+
+      if ts.is_pressed:
+        if delay == 200:
+          delay = 0
+      else:
+        if delay == 0:
+          delay = 200
+      
+      # play sound
+      self.sound.tone([
+        (hertz, duration, delay)
+      ])
+
+
+Guitar().play()
