@@ -8,10 +8,10 @@ from ev3dev2.motor import MediumMotor
 from ev3dev2.sensor.lego import InfraredSensor, TouchSensor
 from ev3dev2.sound import Sound
 
-print("Welcome to EV3 Guitar")
-
 class Guitar:
   def __init__(self):
+    print("Welcome to EV3 Guitar")
+
     self.sound = Sound()
 
     # mount function
@@ -50,7 +50,7 @@ class Guitar:
       self.multiply = self.multiply - 1
 
   def togglePause(self, state):
-    if state & self.pause:
+    if state and self.pause:
       self.pause = False
     else:
       self.pause = True
